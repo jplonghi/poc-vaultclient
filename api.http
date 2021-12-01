@@ -1,0 +1,91 @@
+
+@host = http://127.0.0.1:8200
+@token = vault-plaintext-root-token
+
+@appName = testApp
+
+
+###1. Enable AppRole in Vault
+POST {{host}}/v1/sys/auth/approle HTTP/1.1 
+X-Vault-Token: {{token}}
+content-type: application/json
+
+{"type": "approle"}
+
+
+###2. Create a new app in the AppRole
+POST {{host}}/v1/auth/approle/role/{{appName}} HTTP/1.1 
+X-Vault-Token: {{token}}
+content-type: application/json
+
+{"token_policies": "default"}
+
+
+
+###3. Check app configuration
+GET {{host}}/v1/auth/approle/role/{{appName}} HTTP/1.1 
+X-Vault-Token: {{token}}
+
+###4. Get App role id
+GET {{host}}/v1/auth/approle/role/{{appName}}/role-id HTTP/1.1 
+X-Vault-Token: {{token}}
+
+###Tag an App, ex. production tag
+POST {{host}}/v1/auth/approle/role/{{appName}}/secret-id HTTP/1.1 
+X-Vault-Token: {{token}}
+content-type: application/json
+
+{
+  "metadata": "{ \"tag1\": \"production\" }"
+}
+
+###
+POST {{host}}/v1/auth/approle/role/{{appName}}/secret-id/lookup HTTP/1.1 
+X-Vault-Token: {{token}}
+content-type: application/json
+
+{
+  "secret_id": "ed18c2a7-e9fd-d5e1-e219-3b0f829fc178"
+}
+
+
+###
+POST {{host}}/v1/auth/approle/login HTTP/1.1 
+content-type: application/json
+
+{
+  "role_id": "b50b781a-d6ef-7253-13c1-c51ce8f43d34",
+  "secret_id": "ed18c2a7-e9fd-d5e1-e219-3b0f829fc178"
+}
+
+
+
+### Create Policy
+POST {{host}}/v1/sys/policies/acl/dotnet-policy HTTP/1.1 
+X-Vault-Token: {{token}}
+content-type: application/json
+
+{
+   "policy": "path \"secret/data/*\" {capabilities = [\"read\"]}"
+}
+
+
+###Update policy to this role
+POST {{host}}/v1/auth/approle/role/{{appName}} HTTP/1.1 
+X-Vault-Token: {{token}}
+content-type: application/json
+
+{
+  "token_policies": ["default","dotnet-policy"]
+}
+
+
+
+###Get Data
+GET {{host}}/v1/secret/data/consoleApp?version=1 HTTP/1.1 
+X-Vault-Token: s.kvsLk9VPTgPEjQu4fYjx4dla
+
+
+
+
+

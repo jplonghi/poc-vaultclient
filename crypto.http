@@ -1,0 +1,24 @@
+
+@host = http://127.0.0.1:8200
+@token = s.kvsLk9VPTgPEjQu4fYjx4dla
+
+
+POST {{host}}/v1/transit/encrypt/myKey HTTP/1.1 
+X-Vault-Token: {{token}}
+content-type: application/json
+
+{
+  "plaintext": "SG9sYSBtdW5kbw=="
+}
+
+
+
+###
+POST {{host}}/v1/transit/decrypt/myKey HTTP/1.1 
+X-Vault-Token: {{token}}
+content-type: application/json
+
+{
+  "ciphertext": "vault:v1:LahHrAlxLLlftyLW3CQWrdP3B8jYt5bXwYoDY4e5oDvtiEDWpOM="
+}
+
